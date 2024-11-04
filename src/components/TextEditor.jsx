@@ -1,7 +1,88 @@
-import { useState, useRef  } from 'react';
-import { Input, Textarea, Button, Select, Option } from "@material-tailwind/react";
+import { useState, useRef, useCallback  } from 'react';
+import { Input, Textarea, Button, Select, Option, List, ListItem, Tooltip, Typography } from "@material-tailwind/react";
 import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
 import exportToWord from '../config/exportToWord';
+import { searchCauHoi, searchCauTraLoi } from "../service/apis";
+import { debounce } from 'lodash';
+
+
+  const AutocompleteTextarea = ({ label, value, onChange, suggestions, onSelect }) => {
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [inputValue, setInputValue] = useState(value);
+  
+    const handleInputChange = (e) => {
+      const newValue = e.target.value;
+      setInputValue(newValue);
+      onChange(newValue);
+      setShowSuggestions(true);
+    };
+  
+    const handleSuggestionClick = (suggestion) => {
+      setInputValue(suggestion);
+      setShowSuggestions(false);
+      onChange(suggestion);
+      onSelect && onSelect(suggestion);
+    };
+  
+    return (
+      <div className="relative">
+        <Textarea
+            size='lg'
+          label={label}
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={() => setShowSuggestions(true)}
+        />
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="h-96 absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg overflow-auto">
+            {suggestions.map((suggestion, index) => (
+                 <Tooltip
+                 key={index}
+                 placement="right"
+                 className="border border-blue-gray-50 bg-white px-4 py-3 shadow-xl shadow-black/10"
+                 content={
+                   <div className="w-80">
+                     <Typography color="blue" className="font-medium" textGradient>
+                       {suggestion?.phong}
+                     </Typography>
+                     <Typography color="blue-gray" className="font-medium">
+                       {suggestion?.don_vi}
+                     </Typography>
+                     <Typography
+                       variant="small"
+                       color="blue-gray"
+                       className="font-normal opacity-80"
+                     >
+                       {suggestion?.cau_hoi}
+                     </Typography>
+                   </div>
+                 }
+               >
+                <div
+                    key={index}
+                    className="cursor-pointer rounded-md text-sm p-2 text-blue-gray-700 hover:bg-blue-500 hover:text-white focus:bg-blue-500"
+                    >
+                    <div 
+                        onClick={() => {
+                            if (label.includes("kiến nghị")) {
+                                handleSuggestionClick(suggestion.cau_hoi);
+                            } else if (label.includes("giải pháp")) {
+                                handleSuggestionClick(suggestion.cau_tra_loi);
+                            }
+                        }}
+                        className='line-clamp-3'>
+                        {label.includes("kiến nghị") ? suggestion.cau_hoi : label.includes("giải pháp") ? suggestion.cau_tra_loi : null}
+                    </div>
+
+                    <div className="absolute left-0 right-0 h-[1px] mt-2 bg-blue-gray-700 opacity-70" style={{ width: '95%', left: '2.5%' }} />
+                </div>
+                  </Tooltip>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
 export default function TextEditor() {
     // Khởi tạo state cho từng trường nhập liệu
@@ -18,6 +99,9 @@ export default function TextEditor() {
         recipients: '',
         position: ''
     });
+    const [suggestions, setSuggestions] = useState([])
+    const [solutions, setSolutions] = useState([])
+    const [selected, setSelected] = useState('')
 
     const selectUnit = [
         "Phòng Chính sách pháp luật (CSPL)",
@@ -45,6 +129,41 @@ export default function TextEditor() {
         "Cục Công nghệ thông tin (CNTT)",
         "Trung tâm Lý lịch tư pháp quốc gia (TTLLTPQG)"
     ];
+    const debouncedSearchCauHoi = useCallback(
+        debounce((value) => {
+            handleSearchCauHoi(value);
+        }, 300),
+        []
+    );
+
+    const debouncedSearchCauTraLoi = useCallback(
+        debounce((value) => {
+            handleSearchCauTraLoi(value);
+        }, 300),
+        []
+    );
+    const handleSearchCauHoi = async (searchQuery) => {
+        try {
+            const data = await searchCauHoi(searchQuery);
+            console.log(data)
+            setSuggestions(data.data)
+        } catch (e) {
+            console.log(e);
+        }
+
+    };
+
+    
+    const handleSearchCauTraLoi = async (searchQuery) => {
+        try {
+            const data = await searchCauTraLoi(searchQuery)
+            setSolutions(data.data)
+            setSelected('')
+            console.log(data)
+        } catch (e) {
+            console.log(e)
+        }
+    }
 
     const [value, setValue] = useState("");
     const [isLoading, setIsLoading] = useState("")
@@ -62,12 +181,19 @@ export default function TextEditor() {
 
     // Hàm xử lý thay đổi kiến nghị và giải pháp
     const handleSuggestionChange = (index, field, value) => {
+        if (field === "suggestion" && selected === '') {
+            debouncedSearchCauHoi.cancel();
+            debouncedSearchCauHoi(value);
+        } else if (field === "solution" && value !== '') {
+            console.log(value)
+            debouncedSearchCauTraLoi(value)
+        }
+    
         const newSuggestions = [...form.suggestions];
         newSuggestions[index][field] = value;
         setForm({ ...form, suggestions: newSuggestions });
     };
 
-    // Hàm thêm cặp kiến nghị và giải pháp
     const addSuggestion = () => {
         setForm({
             ...form,
@@ -115,22 +241,33 @@ export default function TextEditor() {
                     </Select>
                 </div>
                 
-                <Textarea label="Nội dung dẫn nhập" name="introduction" onChange={handleChange} />
+                <Textarea size='md' label="Nội dung dẫn nhập" name="introduction" onChange={handleChange} />
 
                 {form.suggestions.map((suggestion, index) => (
                     <div key={suggestion.id} className="space-y-2 flex flex-col">
-                        <Textarea
-                            label={`Phần kiến nghị ${index + 1}`}
-                            value={suggestion.suggestion}
-                            onChange={(e) => handleSuggestionChange(index, 'suggestion', e.target.value)}
+                        <AutocompleteTextarea
+                        label={`Phần kiến nghị ${index + 1}`}
+                        value={suggestion.suggestion}
+                        onChange={(value) => handleSuggestionChange(index, 'suggestion', value)}
+                        suggestions={suggestions}
+                        onSelect={(selected) => {
+                            setSelected(selected)
+                            handleSuggestionChange(index, 'solution', selected);
+                        }}
                         />
-                        <Textarea
-                            label={`Phần giải pháp ${index + 1}`}
-                            value={suggestion.solution}
-                            onChange={(e) => handleSuggestionChange(index, 'solution', e.target.value)}
+                        <AutocompleteTextarea
+                        label={`Phần giải pháp ${index + 1}`}
+                        value={suggestion.solution}
+                        onChange={(value) => handleSuggestionChange(index, 'solution', value)}
+                        suggestions={solutions}
                         />
-                        <Button className='ml-auto' onClick={() => removeSuggestion(index)} variant="text" color="red">
-                            <TrashIcon  className='w-4 h-4'/>
+                        <Button 
+                        className='ml-auto' 
+                        onClick={() => removeSuggestion(index)} 
+                        variant="text" 
+                        color="red"
+                        >
+                        <TrashIcon className='w-4 h-4'/>
                         </Button>
                     </div>
                 ))}
@@ -138,23 +275,23 @@ export default function TextEditor() {
                 <Button onClick={addSuggestion} variant="outlined" className="w-full mt-2">
                     Thêm cặp kiến nghị và giải pháp
                 </Button>
-                <Textarea label="Phần kết" name="conclusion" onChange={handleChange} />
+                <Textarea size='md' label="Phần kết" name="conclusion" onChange={handleChange} />
                 <div className='flex gap-7'>
-                <Textarea size='sm' label="Nơi nhận" name="recipients" onChange={handleChange} />
-                <Textarea size='sm' label="Chức vụ" name="position" onChange={handleChange} />
+                <Textarea size='md' label="Nơi nhận" name="recipients" onChange={handleChange} />
+                <Textarea size='md' label="Chức vụ" name="position" onChange={handleChange} />
                 </div>
             </div>
 
             <div className="w-[55%] flex flex-col p-4 border rounded-md bg-white space-y-4" ref={docRef}>
             <div className='flex justify-between'>
-                <div className='flex flex-col w-fit  items-center'>
-                    <div className='w-fit'>{form.draftingUnit || 'Đơn vị soạn thảo'}</div>
-                    <div className='w-fit'><strong>{form.subjectDetail || ''}</strong></div>
+                <div className='flex flex-col w-fit max-w-[50%]  items-center'>
+                    <div className='w-fit text-center'>{form.draftingUnit || 'Đơn vị soạn thảo'}</div>
+                    <div className='w-fit text-center'><strong>{form.subjectDetail || ''}</strong></div>
                     <div className="w-36 h-0.5 bg-black mt-1"></div>
-                    <div className='w-fit mt-1'>{form.documentNumber || 'Văn bản số'}</div>
-                    <div className='w-fit text-sm'>{form.subject || 'V/v'}</div>
+                    <div className='w-fit mt-1 text-center'>{form.documentNumber || 'Văn bản số'}</div>
+                    <div className='w-fit text-sm text-center'>{form.subject || 'V/v'}</div>
                 </div>
-                <div className='flex flex-col items-center justify-center'>
+                <div className='flex flex-col max-w-[50%] items-center justify-center'>
                     <h1><strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong></h1>
                     <h3><strong>Độc lập - Tự do - Hạnh phúc</strong></h3>
                     <div className="w-36 h-0.5 bg-black mt-1"></div>
@@ -169,10 +306,10 @@ export default function TextEditor() {
             </div>
             {form.suggestions.map((suggestion, index) => (
                 <div key={suggestion.id} className="mb-2">
-                    <span className='font-bold p-3 mt-3 block border-2 rounded-lg'>
+                    <span className='font-bold p-3 mt-3 block border-2 rounded-lg max-h-96 overflow-auto'>
                         {suggestion.suggestion || 'Phần kiến nghị'}
                     </span>
-                    <span className='p-3 block border-2 rounded-lg mt-2'>
+                    <span className='p-3 block border-2 rounded-lg mt-2 max-h-96 overflow-auto'>
                         {suggestion.solution || 'Phần giải pháp'}
                     </span>
                 </div>

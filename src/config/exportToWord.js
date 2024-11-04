@@ -8,95 +8,196 @@ import {
     Packer,
     convertInchesToTwip,
     PageOrientation,
+    Table,
+    TableRow,
+    TableCell,
+    BorderStyle
+    
 } from 'docx';
 import { saveAs } from 'file-saver';
 
 const exportToWord = async (form) => {
-    // Thiết lập lề trang
-    const topMargin = convertInchesToTwip(0.79); // 20mm
-    const bottomMargin = convertInchesToTwip(0.79); // 20mm
-    const leftMarginFront = convertInchesToTwip(1.38); // 35mm
-    const rightMarginFront = convertInchesToTwip(0.79); // 20mm
-    const leftMarginBack = convertInchesToTwip(0.59); // 15mm
-    const rightMarginBack = convertInchesToTwip(1.38); // 35mm
+    const topMargin = convertInchesToTwip(0.79);
+    const bottomMargin = convertInchesToTwip(0.79);
+    const leftMarginFront = convertInchesToTwip(1.38);
+    const rightMarginFront = convertInchesToTwip(0.79);
 
-    // Tạo các đoạn cho từng phần
     const paragraphs = [];
 
-    // Quốc hiệu
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
-                size: 26, 
-                bold: true,
-                break: 1,
-            }),
-            new TextRun({
-                text: "Độc lập - Tự do - Hạnh phúc",
-                size: 28,
-                bold: true,
-                break: 1,
-            }),
-            new TextRun({
-                text: "⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯",
-                break: 1,
-            }),
-        ],
-        alignment: AlignmentType.CENTER,
-    }));
+    // Thông tin bên trái - Cơ quan
+    const headerTable = new Table({
+        rows: [
+            new TableRow({
+                children: [
+                    // Cột bên trái
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "BỘ TƯ PHÁP",
+                                        size: 24,
+                                        bold: false,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                                spacing: {
+                                    after: 120, 
+                                },
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: form.subjectDetail || "VỤ CÁC VẤN ĐỀ CHUNG",
+                                        size:26,
+                                        bold: true,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾",  // Độ dài đường kẻ phụ thuộc vào số lượng dấu _
+                                        size: 26,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                                spacing: {
+                                    after: 100,
+                                },
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "Số: ",
+                                        size:26,
+                                    }),
+                                    new TextRun({
+                                        text: form.documentNumber || "664/VĐCXDPL-XDPL",
+                                        size:26,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                                spacing: {
+                                    after:100, 
+                                },
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: `V/v ${form.subject || ""}`,
+                                        size:22,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                                spacing: {
+                                    after: 120, 
+                                },
+                            }),
+                        ],
+                        borders: {
+                            top: { style: BorderStyle.NIL, size: 0 },
+                            bottom: { style: BorderStyle.NIL, size: 0 },
+                            left: { style: BorderStyle.NIL, size: 0 },
+                            right: { style: BorderStyle.NIL, size: 0 },
+                        },
+                        width: {
+                            size: 50,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        margins: {
+                            top: 0,
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                        },
+                    }),
+                    // Cột bên phải
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+                                        size:26,
+                                        bold: true,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "Độc lập - Tự do - Hạnh phúc",
+                                        size: 26,
+                                        bold: true,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
 
-    // Thông tin cơ quan
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: "BỘ TƯ PHÁP",
-                size: 26, 
-                bold: true,
-            }),
-            new TextRun({
-                text: form.subjectDetail || "VỤ CÁC VẤN ĐỀ CHUNG",
-                size: 26, 
-                bold: true,
-            }),
-        ],
-        alignment: AlignmentType.CENTER,
-    }));
-
-    // Số và ký hiệu
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: "Số: ",
-                size: 26,
-            }),
-            new TextRun({
-                text: form.documentNumber || "664/VĐCXDPL-XDPL",
-                size: 26,
-            }),
-        ],
-    }));
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: `V/v ${form.subject || ""}`,
-                size: 26,
-            }),
-        ],
-    }));
-
-    // Địa danh và ngày tháng
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: form.draftingDate || "Hà Nội, ngày ... tháng ... năm ...",
-                size: 26,
-                italics: true,
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾",  // Độ dài đường kẻ phụ thuộc vào số lượng dấu _
+                                        size: 26,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                                spacing: {
+                                    after:200, 
+                                },
+                            }),
+                            
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: form.draftingDate || "Hà Nội, ngày ... tháng ... năm ...",
+                                        size: 26,
+                                        italics: true,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                        ],
+                        borders: {
+                            top: { style: BorderStyle.NIL, size: 0 },
+                            bottom: { style: BorderStyle.NIL, size: 0 },
+                            left: { style: BorderStyle.NIL, size: 0 },
+                            right: { style: BorderStyle.NIL, size: 0 },
+                        },
+                        width: {
+                            size: 50,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        margins: {
+                            top: 0,
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                        },
+                    }),
+                ],
             }),
         ],
-        alignment: AlignmentType.RIGHT,
-    }));
-
+        width: {
+            size: 100,
+            type: WidthType.PERCENTAGE,
+        },
+        cellSpacing: 0,
+        columnSpacing: 0,
+        borders: {
+            top: { style: BorderStyle.NIL, size: 0 },
+            bottom: { style: BorderStyle.NIL, size: 0 },
+            left: { style: BorderStyle.NIL, size: 0 },
+            right: { style: BorderStyle.NIL, size: 0 },
+        },
+    });
+    
+    // Thêm bảng vào phần `children` của section
+    paragraphs.push(headerTable);
+    
     // Kính gửi
     paragraphs.push(new Paragraph({
         children: [
@@ -108,11 +209,12 @@ const exportToWord = async (form) => {
         spacing: {
             before: 400,
             after: 400,
-            line: 360, // 1.5 lines
+            line: 360,
         },
         indent: {
-            firstLine: convertInchesToTwip(0.5), // 1.27cm
+            firstLine: convertInchesToTwip(0.5),
         },
+        alignment: AlignmentType.CENTER,
     }));
 
     // Nội dung dẫn nhập
@@ -126,10 +228,10 @@ const exportToWord = async (form) => {
         spacing: {
             before: 200,
             after: 200,
-            line: 360, // 1.5 lines
+            line: 360,
         },
         indent: {
-            firstLine: convertInchesToTwip(0.5), // 1.27cm
+            firstLine: convertInchesToTwip(0.5),
         },
     }));
 
@@ -144,7 +246,7 @@ const exportToWord = async (form) => {
                 }),
                 new TextRun({
                     text: suggestion.suggestion || '',
-                    italics: true,
+                    bold: true,
                     size: 26,
                 }),
             ],
@@ -178,7 +280,7 @@ const exportToWord = async (form) => {
         }));
     });
 
-    // Kết
+    // Kết luận
     paragraphs.push(new Paragraph({
         children: [
             new TextRun({
@@ -206,6 +308,7 @@ const exportToWord = async (form) => {
             }),
         ],
     }));
+
     paragraphs.push(new Paragraph({
         children: [
             new TextRun({
@@ -214,6 +317,7 @@ const exportToWord = async (form) => {
             }),
         ],
     }));
+
     paragraphs.push(new Paragraph({
         children: [
             new TextRun({
@@ -222,8 +326,9 @@ const exportToWord = async (form) => {
                 size: 26,
             }),
         ],
-        alignment: AlignmentType.CENTER,
+        alignment: AlignmentType.RIGHT,
     }));
+
     paragraphs.push(new Paragraph({
         children: [
             new TextRun({
@@ -232,8 +337,9 @@ const exportToWord = async (form) => {
                 size: 26,
             }),
         ],
-        alignment: AlignmentType.CENTER,
+        alignment: AlignmentType.RIGHT,
     }));
+
     paragraphs.push(new Paragraph({
         children: [
             new TextRun({
@@ -242,8 +348,9 @@ const exportToWord = async (form) => {
                 size: 26,
             }),
         ],
-        alignment: AlignmentType.CENTER,
+        alignment: AlignmentType.RIGHT,
     }));
+
     paragraphs.push(new Paragraph({
         children: [
             new TextRun({
@@ -252,10 +359,9 @@ const exportToWord = async (form) => {
                 size: 26,
             }),
         ],
-        alignment: AlignmentType.CENTER,
+        alignment: AlignmentType.RIGHT,
     }));
 
-    // Tạo tài liệu Word
     const doc = new Document({
         sections: [{
             properties: {
@@ -266,6 +372,7 @@ const exportToWord = async (form) => {
                         left: leftMarginFront,
                         right: rightMarginFront,
                     },
+                    tableCellSpacing: 0,
                     size: {
                         orientation: PageOrientation.PORTRAIT,
                     },

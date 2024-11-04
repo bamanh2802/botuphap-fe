@@ -12,11 +12,11 @@ const Search = ({}) => {
     return (
         <div className="w-screen h-[calc(100vh-160px)] flex items-center justify-center">
             <div className="flex w-full h-full justify-center ">
-            <SearchSidebar handleSelectedResult={handleSelectedResult}/>
-            <div className="w-full h-full flex justify-center">
-            <SearchContent result={selectedResult}/>
+                <SearchSidebar handleSelectedResult={handleSelectedResult}/>
+                <div className="w-7/12 h-full flex justify-center">
+                    <SearchContent result={selectedResult}/>
+                </div>
             </div>
-        </div>
         </div>
     )
 }

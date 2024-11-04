@@ -8,6 +8,7 @@ const DocumentInputForm = () => {
   const [time, setTime] = useState('');
   const [documentType, setDocumentType] = useState('');
   const [documentName, setDocumentName] = useState('');
+  const [authorName, setAuthorName] = useState('');
   const [responseContent, setResponseContent] = useState('');
   const [issueGroup, setIssueGroup] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -103,20 +104,20 @@ const DocumentInputForm = () => {
   return (
     <div className='mt-8 w-full flex justify-center'>
       <div className='w-full max-w-6xl'>
-        <div className="mb-4">
-          <Select
-            label="Chọn phương thức nhập liệu"
-            value={inputMethod}
-            onChange={(value) => setInputMethod(value)}
-          >
-            <Option value="manual">Nhập liệu</Option>
-            <Option value="upload">Tải lên file</Option>
-          </Select>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          {inputMethod === 'manual' && (
             <>
+            <Select
+            label="Nhóm vấn đề"
+            value={issueGroup}
+            onChange={(value) => setIssueGroup(value)}
+            required
+          >
+            {issueGroups.map((group, index) => (
+              <Option key={index} value={group}>
+                {group}
+              </Option>
+            ))}
+          </Select>
               <Input
                 label="Thời gian"
                 type="date"
@@ -135,30 +136,13 @@ const DocumentInputForm = () => {
                 value={documentName}
                 onChange={(e) => setDocumentName(e.target.value)}
                 required
-              />
-              <Textarea
-                label="Nội dung trả lời"
-                value={responseContent}
-                onChange={(e) => setResponseContent(e.target.value)}
-                required
-              />
+              /> <Input
+              label="Người nhập liệu"
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              required
+            />
             </>
-          )}
-
-          <Select
-            label="Nhóm vấn đề"
-            value={issueGroup}
-            onChange={(value) => setIssueGroup(value)}
-            required
-          >
-            {issueGroups.map((group, index) => (
-              <Option key={index} value={group}>
-                {group}
-              </Option>
-            ))}
-          </Select>
-
-          {inputMethod === 'upload' && (
             <>
               <Input
                 type="file"
@@ -176,7 +160,6 @@ const DocumentInputForm = () => {
                 </div>
               )}
             </>
-          )}
 
           <Button type="submit" className="w-full">
             Gửi
