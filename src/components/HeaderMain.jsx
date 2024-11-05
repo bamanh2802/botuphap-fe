@@ -25,7 +25,7 @@ const HeaderMain = () => {
                 <h3>HỆ THỐNG VĂN BẢN VÀ ĐIỀU HÀNH</h3>
             </div>
             <div className="w-6 h-9">
-                <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/6/6d/Botuphap.svg/1200px-Botuphap.svg.png" alt="" />
+                <img src="/img/logo.png" alt="" />
             </div>
         </div>
 
