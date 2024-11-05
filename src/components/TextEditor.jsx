@@ -4,6 +4,8 @@ import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
 import exportToWord from '../config/exportToWord';
 import { searchCauHoi, searchCauTraLoi } from "../service/apis";
 import { debounce } from 'lodash';
+import {Helmet} from "react-helmet";
+ 
 
 
   const AutocompleteTextarea = ({ label, value, onChange, suggestions, onSelect, isLoading }) => {
@@ -23,6 +25,12 @@ import { debounce } from 'lodash';
       onChange(suggestion);
       onSelect && onSelect(suggestion);
     };
+
+    const handleBlur = () => {
+        setTimeout(() => {
+            setShowSuggestions(false)
+        }, 200)
+    }
   
     return (
       <div className="relative">
@@ -32,6 +40,7 @@ import { debounce } from 'lodash';
           value={inputValue}
           onChange={handleInputChange}
           onFocus={() => setShowSuggestions(true)}
+          onBlur={handleBlur}
         />
         {isLoading && (
           <div className="absolute right-5 top-3">
@@ -155,6 +164,7 @@ export default function TextEditor() {
         try {
             const data = await searchCauHoi(searchQuery);
             setSuggestions(data.data)
+            console.log(data)
         } catch (e) {
             console.log(e);
         }
@@ -166,6 +176,7 @@ export default function TextEditor() {
         setIsLoadingSolution(true)
         try {
             const data = await searchCauTraLoi(searchQuery)
+            console.log(data)
             setSolutions(data.data)
             setSelected('')
         } catch (e) {
@@ -188,10 +199,15 @@ export default function TextEditor() {
 
     // Hàm xử lý thay đổi kiến nghị và giải pháp
     const handleSuggestionChange = (index, field, value) => {
-        if (field === "suggestion" && selected === '') {
+        const filterSuggestion = suggestions.map((suggestion) => suggestion.cau_hoi)
+        const isCallAPI = filterSuggestion.some(suggestions => suggestions === value)
+        const filterSolutions = solutions.map((solution) => solution.cau_tra_loi)
+        const isCallAPI2 = filterSolutions.some((solution) => solution.cau_tra_loi === value)
+        if (field === "suggestion" && selected === '' && !isCallAPI) {
             debouncedSearchCauHoi.cancel();
             debouncedSearchCauHoi(value);
-        } else if (field === "solution" && value !== '') {
+        } else if (field === "solution" && value !== '' && !isCallAPI2) {
+            debouncedSearchCauTraLoi.cancel()
             debouncedSearchCauTraLoi(value)
         }
     
@@ -219,6 +235,9 @@ export default function TextEditor() {
     return (
         <div className="flex flex-col md:flex-row p-1 gap-4 w-full overflow-auto h-full">
             {/* Form nhập liệu bên trái */}
+            <Helmet>
+                <title>Soạn văn bản</title>
+            </Helmet>
             <div className="w-[45%] space-y-4 border-blue-100 p-6">
                 <h2 className="text-xl font-bold">Soạn văn bản</h2>
                 <div className='flex justify-between'>

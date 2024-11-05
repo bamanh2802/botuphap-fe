@@ -1,17 +1,21 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@material-tailwind/react";
-import { HomeIcon, MagnifyingGlassIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
-
+import { HomeIcon, MagnifyingGlassIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 const HeaderMain = () => {
     const navigate = useNavigate();
-    const [selectedPage, setSelectedPage] = useState('')
+    const location = useLocation();
+    const [selectedPage, setSelectedPage] = React.useState('');
+
+    useEffect(() => {
+        // Update selectedPage based on the current path
+        setSelectedPage(location.pathname.replace('/', ''));
+    }, [location.pathname]);
 
     const handleRouterToPages = (page) => {
         navigate(`/${page}`);
-        setSelectedPage(page)
-    }
+    };
 
     return (
        <div className="w-full flex justify-center items-center flex-col">
@@ -25,31 +29,42 @@ const HeaderMain = () => {
             </div>
         </div>
 
-
         <div className="flex items-center w-full justify-start bg-blue-50">
             <div>
-                <Button variant="text" 
-                className={`${selectedPage === '' && 'bg-blue-400'} flex items-center rounded-none`} 
-                onClick={() => handleRouterToPages('')}><HomeIcon className="w-4 h-4 mr-1"/>Trang chủ</Button>
+                <Button 
+                    variant="text" 
+                    className={`${selectedPage === '' && 'bg-blue-400'} flex items-center rounded-none`} 
+                    onClick={() => handleRouterToPages('')}>
+                    <HomeIcon className="w-4 h-4 mr-1"/>Trang chủ
+                </Button>
             </div>
             <div>
-                <Button variant="text" 
-                className={`${selectedPage === 'search' && 'bg-blue-400'} flex items-center rounded-none`} 
-                onClick={() => handleRouterToPages('search')}><MagnifyingGlassIcon className="w-4 h-4 mr-1"/>Tra cứu</Button>
+                <Button 
+                    variant="text" 
+                    className={`${selectedPage === 'search' && 'bg-blue-400'} flex items-center rounded-none`} 
+                    onClick={() => handleRouterToPages('search')}>
+                    <MagnifyingGlassIcon className="w-4 h-4 mr-1"/>Tra cứu
+                </Button>
             </div>
             <div>
-                <Button variant="text" 
-                className={`${selectedPage === 'data-entry' && 'bg-blue-400'} flex rounded-none`} 
-                onClick={() => handleRouterToPages('data-entry')}><DocumentTextIcon className="w-4 h-4 mr-1"/>Nhập dữ liệu</Button>
+                <Button 
+                    variant="text" 
+                    className={`${selectedPage === 'data-entry' && 'bg-blue-400'} flex items-center rounded-none`} 
+                    onClick={() => handleRouterToPages('data-entry')}>
+                    <DocumentTextIcon className="w-4 h-4 mr-1"/>Nhập dữ liệu
+                </Button>
             </div>
             <div>
-                <Button variant="text" 
-                className={`${selectedPage === 'text-editor' && 'bg-blue-400'} flex rounded-none`} 
-                onClick={() => handleRouterToPages('text-editor')}><DocumentTextIcon className="w-4 h-4 mr-1"/>Soạn văn bản</Button>
+                <Button 
+                    variant="text" 
+                    className={`${selectedPage === 'text-editor' && 'bg-blue-400'} flex items-center rounded-none`} 
+                    onClick={() => handleRouterToPages('text-editor')}>
+                    <DocumentTextIcon className="w-4 h-4 mr-1"/>Soạn văn bản
+                </Button>
             </div>
         </div>
        </div>
-    )
-}
+    );
+};
 
 export default HeaderMain;

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@material-tailwind/react';
 import { Button, Spinner, Alert } from '@material-tailwind/react';
 import { uploadFile } from '../service/apis';
+import {Helmet} from "react-helmet";
+
 
 const DocumentInputForm = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -68,6 +70,9 @@ const DocumentInputForm = () => {
 
   return (
     <div className='mt-8 w-full flex justify-center'>
+      <Helmet>
+                <title>Nhập dữ liệu</title>
+            </Helmet>
       <div className='w-full max-w-6xl'>
         <form onSubmit={handleSubmit} className="space-y-4">
           <>
