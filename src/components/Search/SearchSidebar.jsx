@@ -162,7 +162,6 @@ const SearchSidebar = ({handleSelectedResult}) => {
         try {
             const data = await searchCauHoi(searchQuery);
             setSearchResults(data.data);
-            console.log(data)
         } catch (e) {
             console.log(e);
         }
@@ -173,7 +172,6 @@ const SearchSidebar = ({handleSelectedResult}) => {
         setIsLoading(true)
         try {
             const data = await searchCauTraLoi(searchQuery)
-            console.log(data)
             setSearchResults(data.data)
         } catch (e) {
             console.log(e)
@@ -258,6 +256,8 @@ const SearchSidebar = ({handleSelectedResult}) => {
         if (e.key === "Enter") {
             handleSearch();
             setIsDropdownOpen(false);
+            debouncedSearch.cancel();
+
         }
     };
 
@@ -291,7 +291,7 @@ const SearchSidebar = ({handleSelectedResult}) => {
                     autoFocus
                 />
                 {isDropdownOpen && (
-                    <List className="max-h-[calc(100vh-200px)] overflow-auto z-10 bg-blue-50 rounded-md absolute left-0 right-0">
+                    <div className="max-h-[calc(100vh-200px)] overflow-auto z-10 bg-blue-50 rounded-md absolute left-0 right-0">
                         {suggestions.map((suggestion, index) => (
                             
                         <Tooltip
@@ -323,18 +323,18 @@ const SearchSidebar = ({handleSelectedResult}) => {
                           </div>
                         }
                       >
-                        <ListItem
+                        <div
                             key={index}
                             onClick={() => handleSuggestionClick(suggestion?.cau_hoi)}
-                            className="text-sm p-1 text-blue-gray-700 hover:bg-blue-500 hover:text-white focus:bg-blue-500"
+                            className="cursor-pointer rounded-md text-sm p-2 text-blue-gray-700 hover:bg-blue-500 hover:text-white focus:bg-blue-500"
                         >
                             <div className="line-clamp-3">
                                 {suggestion?.cau_hoi}
                             </div>
-                        </ListItem>
+                        </div>
                         </Tooltip>
                         ))}
-                    </List>
+                    </div>
                 )}
             </div>
             <div className="h-full flex flex-col" ref={containerRef}>

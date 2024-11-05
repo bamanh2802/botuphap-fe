@@ -14,7 +14,6 @@ const DocumentInputForm = () => {
 
   useEffect(() => {
     const storedFiles = JSON.parse(localStorage.getItem('uploadedFiles')) || [];
-    setUploadedFiles(storedFiles);
 
     const storedDocuments = JSON.parse(localStorage.getItem('submittedDocuments')) || [];
     setSubmittedDocuments(storedDocuments);
@@ -31,7 +30,7 @@ const DocumentInputForm = () => {
 
     const updatedFiles = [...uploadedFiles, ...docxFiles];
     setUploadedFiles(updatedFiles);
-    localStorage.setItem('uploadedFiles', JSON.stringify(updatedFiles.map(file => file.name)));
+    localStorage.setItem('uploadedFiles', JSON.stringify(updatedFiles.map(file => file?.name)));
   };
 
   const handleSubmit = async (e) => {
@@ -51,7 +50,7 @@ const DocumentInputForm = () => {
       await uploadFile(uploadedFiles);
       
       const documentData = { 
-        files: uploadedFiles.map(file => file.name),
+        files: uploadedFiles.map(file => file?.name),
         time: new Date().toLocaleString(),
       };
       const updatedDocuments = [...submittedDocuments, documentData];
@@ -87,7 +86,7 @@ const DocumentInputForm = () => {
                 <h4 className="font-semibold">Các file đã tải lên:</h4>
                 <ul className="list-disc ml-6">
                   {uploadedFiles.map((file, index) => (
-                    <li key={index}>{file.name}</li>
+                    <li key={index}>{file?.name}</li>
                   ))}
                 </ul>
               </div>

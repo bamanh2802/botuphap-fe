@@ -290,77 +290,126 @@ const exportToWord = async (form) => {
         ],
         spacing: {
             before: 200,
-            after: 200,
+            after: 400,
             line: 360,
         },
         indent: {
             firstLine: convertInchesToTwip(0.5),
         },
     }));
+    const recipientLines = (form.recipients || '').split('\n');
 
     // Footer với nơi nhận và chữ ký
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: "Nơi nhận:",
-                italics: true,
-                size: 26,
+    const footerTable = new Table({
+        rows: [
+            new TableRow({
+                children: [
+                    // Left column
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "Nơi nhận:",
+                                        italics: true,
+                                        size: 26,
+                                    }),
+                                ],
+                            }),
+                            ...recipientLines.map(line => 
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: line,
+                                            size: 26,
+                                        }),
+                                    ],
+                                })
+                            ),
+                        ],
+                        width: {
+                            size: 50,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        borders: {
+                            top: { style: BorderStyle.NIL, size: 0 },
+                            bottom: { style: BorderStyle.NIL, size: 0 },
+                            left: { style: BorderStyle.NIL, size: 0 },
+                            right: { style: BorderStyle.NIL, size: 0 },
+                        },
+                    }),
+                    // Right column
+                    new TableCell({
+                        children: [
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "KT. VỤ TRƯỞNG",
+                                        bold: true,
+                                        size: 26,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "PHÓ VỤ TRƯỞNG",
+                                        bold: true,
+                                        size: 26,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: "(Đã ký)",
+                                        italics: true,
+                                        size: 26,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                            new Paragraph({
+                                children: [
+                                    new TextRun({
+                                        text: form.position || '',
+                                        bold: true,
+                                        size: 26,
+                                    }),
+                                ],
+                                alignment: AlignmentType.CENTER,
+                            }),
+                        ],
+                        width: {
+                            size: 50,
+                            type: WidthType.PERCENTAGE,
+                        },
+                        borders: {
+                            top: { style: BorderStyle.NIL, size: 0 },
+                            bottom: { style: BorderStyle.NIL, size: 0 },
+                            left: { style: BorderStyle.NIL, size: 0 },
+                            right: { style: BorderStyle.NIL, size: 0 },
+                        },
+                    }),
+                ],
             }),
         ],
-    }));
+        width: {
+            size: 100,
+            type: WidthType.PERCENTAGE,
+        },
+        borders: {
+            top: { style: BorderStyle.NIL, size: 0 },
+            bottom: { style: BorderStyle.NIL, size: 0 },
+            left: { style: BorderStyle.NIL, size: 0 },
+            right: { style: BorderStyle.NIL, size: 0 },
+        },
+    });
 
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: form.recipients || '',
-                size: 26,
-            }),
-        ],
-    }));
+    paragraphs.push(footerTable);
 
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: "KT. VỤ TRƯỞNG",
-                bold: true,
-                size: 26,
-            }),
-        ],
-        alignment: AlignmentType.RIGHT,
-    }));
-
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: "PHÓ VỤ TRƯỞNG",
-                bold: true,
-                size: 26,
-            }),
-        ],
-        alignment: AlignmentType.RIGHT,
-    }));
-
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: "(Đã ký)",
-                italics: true,
-                size: 26,
-            }),
-        ],
-        alignment: AlignmentType.RIGHT,
-    }));
-
-    paragraphs.push(new Paragraph({
-        children: [
-            new TextRun({
-                text: form.position || '',
-                bold: true,
-                size: 26,
-            }),
-        ],
-        alignment: AlignmentType.RIGHT,
-    }));
 
     const doc = new Document({
         sections: [{
