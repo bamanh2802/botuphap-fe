@@ -63,3 +63,23 @@ export const searchCauTraLoi = async (cauTraLoi) => {
 
     return response;
 };
+export const uploadFile = async (files) => {
+    const formData = new FormData();
+  
+    // Duyệt qua danh sách các file và thêm từng file vào FormData
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+  
+    const response = await fetch(`${API_PATH}/upload`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+      },
+      body: formData,
+    });
+  
+    const data = await response.json();
+    return data;
+  };
+  

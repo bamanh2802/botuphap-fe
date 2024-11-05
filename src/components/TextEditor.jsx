@@ -1,12 +1,12 @@
 import { useState, useRef, useCallback  } from 'react';
-import { Input, Textarea, Button, Select, Option, List, ListItem, Tooltip, Typography } from "@material-tailwind/react";
+import { Input, Textarea, Button, Select, Option, List, ListItem, Tooltip, Typography, Spinner } from "@material-tailwind/react";
 import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
 import exportToWord from '../config/exportToWord';
 import { searchCauHoi, searchCauTraLoi } from "../service/apis";
 import { debounce } from 'lodash';
 
 
-  const AutocompleteTextarea = ({ label, value, onChange, suggestions, onSelect }) => {
+  const AutocompleteTextarea = ({ label, value, onChange, suggestions, onSelect, isLoading }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [inputValue, setInputValue] = useState(value);
   
@@ -33,6 +33,11 @@ import { debounce } from 'lodash';
           onChange={handleInputChange}
           onFocus={() => setShowSuggestions(true)}
         />
+        {isLoading && (
+          <div className="absolute right-5 top-3">
+            <Spinner className="h-4 w-4" />
+          </div>
+        )}
         {showSuggestions && suggestions.length > 0 && (
           <div className="h-96 absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg overflow-auto">
             {suggestions.map((suggestion, index) => (
@@ -102,7 +107,10 @@ export default function TextEditor() {
     const [suggestions, setSuggestions] = useState([])
     const [solutions, setSolutions] = useState([])
     const [selected, setSelected] = useState('')
-
+    
+    const [value, setValue] = useState("");
+    const [isLoadingAnswer, setIsLoadingAnswer] = useState("")
+    const [isLoadingSolution, setIsLoadingSolution] = useState("")
     const selectUnit = [
         "Phòng Chính sách pháp luật (CSPL)",
         "Phòng Công tác xây dựng pháp luật (XDPL)",
@@ -132,41 +140,40 @@ export default function TextEditor() {
     const debouncedSearchCauHoi = useCallback(
         debounce((value) => {
             handleSearchCauHoi(value);
-        }, 300),
+        }, 500),
         []
     );
 
     const debouncedSearchCauTraLoi = useCallback(
         debounce((value) => {
             handleSearchCauTraLoi(value);
-        }, 300),
+        }, 500),
         []
     );
     const handleSearchCauHoi = async (searchQuery) => {
+        setIsLoadingAnswer(true)
         try {
             const data = await searchCauHoi(searchQuery);
-            console.log(data)
             setSuggestions(data.data)
         } catch (e) {
             console.log(e);
         }
-
+        setIsLoadingAnswer(false)
     };
 
     
     const handleSearchCauTraLoi = async (searchQuery) => {
+        setIsLoadingSolution(true)
         try {
             const data = await searchCauTraLoi(searchQuery)
             setSolutions(data.data)
             setSelected('')
-            console.log(data)
         } catch (e) {
             console.log(e)
         }
+        setIsLoadingSolution(false)
     }
 
-    const [value, setValue] = useState("");
-    const [isLoading, setIsLoading] = useState("")
 
     // Hàm xử lý thay đổi giá trị trong form
     const handleChange = (e) => {
@@ -185,7 +192,6 @@ export default function TextEditor() {
             debouncedSearchCauHoi.cancel();
             debouncedSearchCauHoi(value);
         } else if (field === "solution" && value !== '') {
-            console.log(value)
             debouncedSearchCauTraLoi(value)
         }
     
@@ -254,12 +260,14 @@ export default function TextEditor() {
                             setSelected(selected)
                             handleSuggestionChange(index, 'solution', selected);
                         }}
+                        isLoading={isLoadingAnswer}
                         />
                         <AutocompleteTextarea
                         label={`Phần giải pháp ${index + 1}`}
                         value={suggestion.solution}
                         onChange={(value) => handleSuggestionChange(index, 'solution', value)}
                         suggestions={solutions}
+                        isLoading={isLoadingSolution}
                         />
                         <Button 
                         className='ml-auto' 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Input, List, ListItem, Button, Tooltip, Typography } from "@material-tailwind/react";
-import { searchCauHoi, searchCauTraLoi } from "../../service/apis";
+import { searchCauHoi, searchCauTraLoi, searchNoiDungChinh } from "../../service/apis";
 import { debounce } from 'lodash';
 import { Menu, MenuHandler, MenuList, MenuItem, Popover, PopoverHandler, PopoverContent } from "@material-tailwind/react";
 import { ChevronDownIcon, XMarkIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -58,7 +58,7 @@ const SearchSidebar = ({handleSelectedResult}) => {
                     >
                         {filterType === "answer" ? "Câu trả lời" : 
                         filterType === "suggestion" ? "Kiến nghị" : 
-                        "Lọc theo loại"}
+                        "Chưa xử lý"}
                         <ChevronDownIcon strokeWidth={2.5} className="h-3.5 w-3.5" />
                     </Button>
                 </MenuHandler>
@@ -68,6 +68,9 @@ const SearchSidebar = ({handleSelectedResult}) => {
                     </MenuItem>
                     <MenuItem onClick={() => handleFilterType("suggestion")}>
                         Kiến nghị
+                    </MenuItem>
+                    <MenuItem onClick={() => handleFilterType("notProcessed")}>
+                        Chưa xử lý
                     </MenuItem>
                 </MenuList>
             </Menu>
@@ -130,6 +133,16 @@ const SearchSidebar = ({handleSelectedResult}) => {
         return () => window.removeEventListener('resize', calculateItemsPerPage);
     }, []);
 
+
+    const handleSearchNoiDung = async (searchQuery) => {
+        try {
+            const data = await searchNoiDungChinh(searchQuery)
+            console.log(data)
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     const handleSearchCauHoi = async (searchQuery) => {
         setIsLoading(true)
         try {
@@ -149,6 +162,7 @@ const SearchSidebar = ({handleSelectedResult}) => {
         try {
             const data = await searchCauHoi(searchQuery);
             setSearchResults(data.data);
+            console.log(data)
         } catch (e) {
             console.log(e);
         }
@@ -199,17 +213,25 @@ const SearchSidebar = ({handleSelectedResult}) => {
     }, [searchQuery, debouncedSearch]);
 
     useEffect(() => {
-        if(filterType === "answer") {
-            handleSearchResult(searchQuery);
-        } else {
-            handleSearchCauTraLoi(searchQuery);
+        if(searchQuery !== "") {
+            if(filterType === "answer") {
+                handleSearchResult(searchQuery);
+            } else if(filterType === "suggestion") {
+                handleSearchCauTraLoi(searchQuery);
+            } else {
+                handleSearchNoiDung(searchQuery)
+            }
         }
     }, [filterType])
     const handleSearch = async () => {
-        if(filterType === "answer") {
-            handleSearchResult(searchQuery);
-        } else {
-            handleSearchCauTraLoi(searchQuery);
+        if(searchQuery !== "") {
+            if(filterType === "answer") {
+                handleSearchResult(searchQuery);
+            } else if(filterType === "suggestion") {
+                handleSearchCauTraLoi(searchQuery);
+            } else {
+                handleSearchNoiDung(searchQuery)
+            }
         }
         setCurrentPage(1);
     };
@@ -273,6 +295,7 @@ const SearchSidebar = ({handleSelectedResult}) => {
                         {suggestions.map((suggestion, index) => (
                             
                         <Tooltip
+                        key={index}
                         placement="right"
                         className="border border-blue-gray-50 bg-white px-4 py-3 shadow-xl shadow-black/10"
                         content={
@@ -327,10 +350,10 @@ const SearchSidebar = ({handleSelectedResult}) => {
                     </Button>
                 ): (
                     <div className="flex-grow overflow-y-auto">
-                        {currentResults.map((result) => (
+                        {currentResults.map((result, index) => (
                             <div 
                                 onClick={() => handleSelectedResult(result)}
-                                key={result.id} 
+                                key={index} 
                                 className="cursor-pointer group transition-all border-none rounded-lg p-4 mb-2 bg-white"
                             >
                                 <h3 className="font-bold underline-offset-1 group-hover:underline truncate w-full">
