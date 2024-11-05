@@ -159,23 +159,20 @@ export default function TextEditor() {
         }, 500),
         []
     );
-    useEffect(() => {
-        console.log(suggestions); 
-    }, [suggestions]);
 
-    const check = () => {
-        console.log(suggestions); 
-    }
-    
-    const handleSearchCauHoi = async (searchQuery) => {
+    const handleSearchCauHoi = async () => {
         setIsLoadingAnswer(true)
-        try {
-            const data = await searchCauHoi(searchQuery);
-            setSuggestions(data.data)
-            console.log(data)
-        } catch (e) {
-            console.log(e);
+        if(searchQuery !== "") {
+            try {
+                const data = await searchCauHoi(searchQuery);
+                setSuggestions(data.data)
+                console.log(data)
+            } catch (e) {
+                console.log(e);
+            }
         }
+        setIsLoadingAnswer(false)
+
     };
     
 
