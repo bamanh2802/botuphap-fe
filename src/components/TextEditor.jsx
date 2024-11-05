@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback  } from 'react';
+import { useState, useRef, useCallback, useEffect  } from 'react';
 import { Input, Textarea, Button, Select, Option, List, ListItem, Tooltip, Typography, Spinner } from "@material-tailwind/react";
 import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
 import exportToWord from '../config/exportToWord';
@@ -23,6 +23,12 @@ import { debounce } from 'lodash';
       onChange(suggestion);
       onSelect && onSelect(suggestion);
     };
+
+    const handleBlur= () => {
+        setTimeout(() => {
+            setShowSuggestions(false);
+        }, 200);
+    }
   
     return (
       <div className="relative">
@@ -32,6 +38,7 @@ import { debounce } from 'lodash';
           value={inputValue}
           onChange={handleInputChange}
           onFocus={() => setShowSuggestions(true)}
+          onBlur={handleBlur}
         />
         {isLoading && (
           <div className="absolute right-5 top-3">
@@ -91,26 +98,6 @@ import { debounce } from 'lodash';
 
 export default function TextEditor() {
     // Khởi tạo state cho từng trường nhập liệu
-    const [form, setForm] = useState({
-        draftingUnit: '',
-        documentNumber: '',
-        subject: '',
-        subjectDetail: '',
-        draftingDate: '',
-        receivingUnit: '',
-        introduction: '',
-        suggestions: [{ id: 1, suggestion: '', solution: '' }],
-        conclusion: '',
-        recipients: '',
-        position: ''
-    });
-    const [suggestions, setSuggestions] = useState([])
-    const [solutions, setSolutions] = useState([])
-    const [selected, setSelected] = useState('')
-    
-    const [value, setValue] = useState("");
-    const [isLoadingAnswer, setIsLoadingAnswer] = useState("")
-    const [isLoadingSolution, setIsLoadingSolution] = useState("")
     const selectUnit = [
         "Phòng Chính sách pháp luật (CSPL)",
         "Phòng Công tác xây dựng pháp luật (XDPL)",
@@ -137,6 +124,26 @@ export default function TextEditor() {
         "Cục Công nghệ thông tin (CNTT)",
         "Trung tâm Lý lịch tư pháp quốc gia (TTLLTPQG)"
     ];
+    const [form, setForm] = useState({
+        draftingUnit: '',
+        documentNumber: '',
+        subject: '',
+        subjectDetail: '',
+        draftingDate: '',
+        receivingUnit: '',
+        introduction: '',
+        suggestions: [{ id: 1, suggestion: '', solution: '' }],
+        conclusion: '',
+        recipients: '-Như trên;\nVụ trưởng (để b/c);',
+        position: ''
+    });
+    const [suggestions, setSuggestions] = useState([])
+    const [solutions, setSolutions] = useState([])
+    const [selected, setSelected] = useState('')
+    
+    const [value, setValue] = useState("");
+    const [isLoadingAnswer, setIsLoadingAnswer] = useState("")
+    const [isLoadingSolution, setIsLoadingSolution] = useState("")
     const debouncedSearchCauHoi = useCallback(
         debounce((value) => {
             handleSearchCauHoi(value);
@@ -150,43 +157,84 @@ export default function TextEditor() {
         }, 500),
         []
     );
+    useEffect(() => {
+        console.log(suggestions); 
+    }, [suggestions]);
+
+    const check = () => {
+        console.log(suggestions); 
+    }
+    
     const handleSearchCauHoi = async (searchQuery) => {
-        setIsLoadingAnswer(true)
-        try {
-            const data = await searchCauHoi(searchQuery);
-            setSuggestions(data.data)
-        } catch (e) {
-            console.log(e);
+        if (searchQuery !== "") {
+            const suggestionsList = suggestions.map(suggestion => suggestion.cau_hoi); 
+    
+            const isInSolution = suggestionsList.some(solution => solution.includes(searchQuery));
+
+            check()
+    
+            if (!isInSolution) {
+                setIsLoadingAnswer(true);
+                try {
+                    const data = await searchCauHoi(searchQuery);
+                    setSuggestions(data.data);
+                } catch (e) {
+                    console.log(e);
+                }
+                setIsLoadingAnswer(false);
+            } else {
+                console.log("searchQuery đã nằm trong suggestions, không gọi API.");
+            }
         }
-        setIsLoadingAnswer(false)
     };
+    
 
     
     const handleSearchCauTraLoi = async (searchQuery) => {
-        setIsLoadingSolution(true)
-        try {
-            const data = await searchCauTraLoi(searchQuery)
-            setSolutions(data.data)
-            setSelected('')
-        } catch (e) {
-            console.log(e)
-        }
-        setIsLoadingSolution(false)
+            setIsLoadingSolution(true)
+            try {
+                const data = await searchCauTraLoi(searchQuery)
+                setSolutions(data.data)
+                setSelected('')
+            } catch (e) {
+                console.log(e)
+            }
+            setIsLoadingSolution(false)
     }
 
 
-    // Hàm xử lý thay đổi giá trị trong form
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm({ ...form, [name]: value });
+        
+        if (name === 'recipients') {
+            setForm({ 
+                ...form, 
+                [name]: value.replace(/\r\n/g, '\n')  
+            });
+        } else {
+            setForm({ ...form, [name]: value });
+        }
     };
-
     const handleSelectChange = (value) => {
         setForm({ ...form, receivingUnit: value });
         setValue(value);
     };
 
-    // Hàm xử lý thay đổi kiến nghị và giải pháp
+    
+    const addSuggestion = () => {
+        setForm({
+            ...form,
+            suggestions: [...form.suggestions, { id: form.suggestions.length + 1, suggestion: '', solution: '' }],
+        });
+    };
+    
+    const docRef = useRef(null);
+    
+    
+    const removeSuggestion = (index) => {
+        const newSuggestions = form.suggestions.filter((_, i) => i !== index);
+        setForm({ ...form, suggestions: newSuggestions });
+    };
     const handleSuggestionChange = (index, field, value) => {
         if (field === "suggestion" && selected === '') {
             debouncedSearchCauHoi.cancel();
@@ -197,22 +245,6 @@ export default function TextEditor() {
     
         const newSuggestions = [...form.suggestions];
         newSuggestions[index][field] = value;
-        setForm({ ...form, suggestions: newSuggestions });
-    };
-
-    const addSuggestion = () => {
-        setForm({
-            ...form,
-            suggestions: [...form.suggestions, { id: form.suggestions.length + 1, suggestion: '', solution: '' }],
-        });
-    };
-
-    const docRef = useRef(null);
-
-
-    // Hàm xóa cặp kiến nghị và giải pháp
-    const removeSuggestion = (index) => {
-        const newSuggestions = form.suggestions.filter((_, i) => i !== index);
         setForm({ ...form, suggestions: newSuggestions });
     };
 
@@ -285,7 +317,7 @@ export default function TextEditor() {
                 </Button>
                 <Textarea size='md' label="Phần kết" name="conclusion" onChange={handleChange} />
                 <div className='flex gap-7'>
-                <Textarea size='md' label="Nơi nhận" name="recipients" onChange={handleChange} />
+                <Textarea size='md' label="Nơi nhận" name="recipients" style={{ whiteSpace: 'pre-line' }} onChange={handleChange} />
                 <Textarea size='md' label="Chức vụ" name="position" onChange={handleChange} />
                 </div>
             </div>
@@ -326,9 +358,11 @@ export default function TextEditor() {
                 {form.conclusion || 'Phần kết'}
             </div>
             <div className='flex justify-between'>
-                <div className='p-1 mt-4 border-2 rounded-lg text-sm h-fit'>
-                    {form.recipients || 'Nơi nhận'}
-                </div>
+            <div className='p-1 mt-4 border-2 rounded-lg text-sm h-fit'>
+                {(form.recipients || 'Nơi nhận').split('\n').map((line, index) => (
+                    <div key={index}>{line}</div>
+                ))}
+            </div>
                 <div className='mr-6 flex flex-col items-center'>
                     <div className='flex items-center flex-col'>
                         <span className='block font-bold'>KT. VỤ TRƯỞNG</span>
