@@ -160,7 +160,7 @@ export default function TextEditor() {
         []
     );
 
-    const handleSearchCauHoi = async () => {
+    const handleSearchCauHoi = async (searchQuery) => {
         setIsLoadingAnswer(true)
         if(searchQuery !== "") {
             try {
