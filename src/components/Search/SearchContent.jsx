@@ -96,7 +96,7 @@ export default function SearchContent(props) {
         </div>
       </CardHeader>
       <CardBody className="p-6 max-w-5xl">
-        <div className="border border-gray-300 rounded p-4 max-h-[400px] overflow-auto min-h-96 mx-4">
+        <div className="border flex flex-col justify-center items-center border-gray-300 rounded p-4 max-h-[400px] overflow-auto min-h-96 mx-4">
           <Typography className="font-bold">Câu hỏi: {!result ? 'Câu hỏi' : result.cau_hoi}</Typography>
           <Typography>Câu trả lời: {!result ? 'Câu trả lời' : result.cau_tra_loi}</Typography>
         </div>

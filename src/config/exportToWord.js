@@ -19,8 +19,8 @@ import { saveAs } from 'file-saver';
 const exportToWord = async (form) => {
     const topMargin = convertInchesToTwip(0.79);
     const bottomMargin = convertInchesToTwip(0.79);
-    const leftMarginFront = convertInchesToTwip(1.38);
-    const rightMarginFront = convertInchesToTwip(0.79);
+    const leftMarginFront = convertInchesToTwip(1.18);
+    const rightMarginFront = convertInchesToTwip(0.59);
 
     const paragraphs = [];
 
