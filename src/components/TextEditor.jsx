@@ -101,9 +101,9 @@ import {Helmet} from "react-helmet";
 export default function TextEditor() {
     // Khởi tạo state cho từng trường nhập liệu
     const selectUnit = [
-        "Phòng Chính sách pháp luật (CSPL)",
-        "Phòng Công tác xây dựng pháp luật (XDPL)",
-        "Phòng Công tác pháp chế (CTPC)",
+        "Phòng Chính sách pháp luật",
+        "Phòng Công tác xây dựng pháp luật",
+        "Phòng Công tác pháp chế)",
         "Phòng Đánh giá tác động thủ tục hành chính và Tổng hợp",
         "Vụ Pháp luật hình sự - hành chính",
         "Vụ Pháp luật dân sự - kinh tế",
@@ -112,19 +112,19 @@ export default function TextEditor() {
         "Vụ Hợp tác quốc tế",
         "Vụ Con nuôi",
         "Thanh tra Bộ",
-        "Văn phòng Bộ (VP)",
-        "Tổng cục Thi hành án dân sự (TCTHADS)",
-        "Cục Phổ biến, giáo dục pháp luật (PBGDPL)",
-        "Cục Kiểm tra văn bản quy phạm pháp luật (KtrVB)",
-        "Cục Quản lý xử lý vi phạm hành chính và theo dõi thi hành pháp luật (QLXLVPHC&TDTHPL)",
-        "Cục Hộ tịch, quốc tịch, chứng thực (HTQTCT)",
-        "Cục Trợ giúp pháp lý (TGPL)",
-        "Cục Đăng ký quốc gia giao dịch bảo đảm (CĐKGDBĐ)",
-        "Cục Bồi thường nhà nước (BTNN)",
-        "Cục Bổ trợ tư pháp (BTTP)",
-        "Cục Kế hoạch - Tài chính (KHTC)",
-        "Cục Công nghệ thông tin (CNTT)",
-        "Trung tâm Lý lịch tư pháp quốc gia (TTLLTPQG)"
+        "Văn phòng Bộ",
+        "Tổng cục Thi hành án dân sự",
+        "Cục Phổ biến, giáo dục pháp luật",
+        "Cục Kiểm tra văn bản quy phạm pháp luật",
+        "Cục Quản lý xử lý vi phạm hành chính và theo dõi thi hành pháp luật",
+        "Cục Hộ tịch, quốc tịch, chứng thực",
+        "Cục Trợ giúp pháp lý",
+        "Cục Đăng ký quốc gia giao dịch bảo đảm",
+        "Cục Bồi thường nhà nước",
+        "Cục Bổ trợ tư pháp",
+        "Cục Kế hoạch - Tài chính",
+        "Cục Công nghệ thông tin",
+        "Trung tâm Lý lịch tư pháp quốc gia"
     ];
     const [form, setForm] = useState({
         draftingUnit: '',
@@ -142,10 +142,20 @@ export default function TextEditor() {
     const [suggestions, setSuggestions] = useState([])
     const [solutions, setSolutions] = useState([])
     const [selected, setSelected] = useState('')
-    
+    const [isSelectVisible, setIsSelectVisible] = useState(false);
     const [value, setValue] = useState("");
     const [isLoadingAnswer, setIsLoadingAnswer] = useState("")
     const [isLoadingSolution, setIsLoadingSolution] = useState("")
+    const handleInputFocus = () => {
+        setIsSelectVisible(true);
+      };
+    
+    const handleOnBlur = () => {
+        setTimeout(() => {
+            setIsSelectVisible(false)
+        }, 100)
+    }
+
     const debouncedSearchCauHoi = useCallback(
         debounce((value) => {
             handleSearchCauHoi(value);
@@ -208,6 +218,7 @@ export default function TextEditor() {
         setValue(value);
     };
 
+
     
     const addSuggestion = () => {
         setForm({
@@ -252,7 +263,7 @@ export default function TextEditor() {
                 <div className='flex justify-between'>
                     <div className='flex flex-col justify-end w-full max-w-24 gap-1'>
                         <Input label="Đơn vị soạn thảo" name="draftingUnit" onChange={handleChange} />
-                        <Input label="Vụ việc" name="subjectDetail" onChange={handleChange} />
+                        <Input label="Đơn vị" name="subjectDetail" onChange={handleChange} />
 
                         <Input label="Văn bản số" name="documentNumber" onChange={handleChange} />
                         <Input label="V/v" name="subject" onChange={handleChange} />
@@ -261,19 +272,31 @@ export default function TextEditor() {
                         <Input label="Thời gian soạn thảo" name="draftingDate" onChange={handleChange} />
                     </div>
                 </div>
-                <div className='w-full'>
-                    <Select label="Đơn vị nhận" 
+                <div className="w-full relative">
+                    <Input
+                        type="text"
                         value={value}
-                        onChange={(val) => handleSelectChange(val)}>
-                        {
-                            selectUnit.map((unit, index) => (
-                                <Option 
-                                    value={unit}
-                                    key={index}>{unit}</Option>
-                            ))
-                        }
-                    </Select>
-                </div>
+                        label="Đơn vị"
+                        onChange={(e) => {handleSelectChange(e.target.value)}}
+                        onBlur={handleOnBlur}
+                        onFocus={handleInputFocus} // Hiển thị `Select` khi nhấp vào `input`
+                        className="border rounded p-2 w-full"
+                    />
+                    {isSelectVisible && (
+                        <div
+                        label="Chọn đơn vị" 
+                        className="h-96 absolute z-10 w-full bg-white border border-gray-200 rounded-md shadow-lg overflow-auto"
+                        >
+                        {selectUnit.map((unit, index) => (
+                            <div 
+                            onClick={() => handleSelectChange(unit)}
+                            className='mt-cursor-pointer rounded-md text-sm p-2 text-blue-gray-700 hover:bg-blue-500 hover:text-white focus:bg-blue-500' key={index}>
+                            {unit}
+                            </div>
+                        ))}
+                        </div>
+                    )}
+                    </div>
                 
                 <Textarea size='md' label="Nội dung dẫn nhập" name="introduction" onChange={handleChange} />
 
@@ -324,8 +347,8 @@ export default function TextEditor() {
                     <div className='w-fit text-center'>{form.draftingUnit || 'Đơn vị soạn thảo'}</div>
                     <div className='w-fit text-center'><strong>{form.subjectDetail || ''}</strong></div>
                     <div className="w-36 h-0.5 bg-black mt-1"></div>
-                    <div className='w-fit mt-1 text-center'>{form.documentNumber || 'Văn bản số'}</div>
-                    <div className='w-fit text-sm text-center'>{form.subject || 'V/v'}</div>
+                    <div className='w-fit mt-1 text-center'>{`Số ${form.documentNumber}` || 'Văn bản số'}</div>
+                    <div className='w-fit text-sm text-center'>{`V/v ${form.subject}` || 'V/v'}</div>
                 </div>
                 <div className='flex flex-col max-w-[50%] items-center justify-center'>
                     <h1><strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong></h1>

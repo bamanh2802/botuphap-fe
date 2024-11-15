@@ -20,6 +20,7 @@ const SearchSidebar = ({handleSelectedResult}) => {
     const containerRef = useRef(null);
     const [itemsPerPage, setItemsPerPage] = useState(10); // Giá trị mặc định
     const [isLoading, setIsLoading] = useState(false)
+    const [listContent, setListContent] = useState([])
     
     
     const handleFilterType = (type) => {
@@ -135,12 +136,15 @@ const SearchSidebar = ({handleSelectedResult}) => {
 
 
     const handleSearchNoiDung = async (searchQuery) => {
+        setIsLoading(true)
         try {
             const data = await searchNoiDungChinh(searchQuery)
             console.log(data)
+            setSearchResults(data.data)
         } catch (e) {
             console.log(e)
         }
+        setIsLoading(false)
     }
 
     const handleSearchCauHoi = async (searchQuery) => {

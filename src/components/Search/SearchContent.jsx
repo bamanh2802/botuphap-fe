@@ -72,8 +72,8 @@ export default function SearchContent(props) {
   }, [result?.filename]);
 
   const CardContent = () => (
-    <Card className="w-full max-w-5xl shadow-none border-blue-100 mx-9">
-      <CardHeader className="max-w-5xl mt-8 text-center p-4 justify-between flex shadow-none border-none">
+    <Card className="w-full max-w-5xl h-full overflow-auto shadow-none border-blue-100 mx-9">
+      <CardHeader className="max-w-5xl min-h-40 mt-8 text-center p-4 justify-between flex shadow-none border-none">
         <div>
           <div className="justify-around flex flex-col h-full">
             <Typography variant="small" className="border border-gray-300 rounded px-2 py-1">
@@ -95,12 +95,18 @@ export default function SearchContent(props) {
           </Typography>
         </div>
       </CardHeader>
-      <CardBody className="p-6 max-w-5xl">
-        <div className="border flex flex-col justify-center items-center border-gray-300 rounded p-4 max-h-[400px] overflow-auto min-h-96 mx-4">
-          <Typography className="font-bold">Câu hỏi: {!result ? 'Câu hỏi' : result.cau_hoi}</Typography>
-          <Typography>Câu trả lời: {!result ? 'Câu trả lời' : result.cau_tra_loi}</Typography>
+      <CardBody className={`p-6 max-w-5xl `}>
+      <div className={`${result ? '' : 'flex flex-col items-center justify-center'} border border-gray-300 rounded p-4 max-h-[400px] overflow-auto min-h-96 mx-4 w-full flex flex-col`}>
+        <div className="flex-shrink-0">
+          <Typography className="font-bold break-words">Câu hỏi: {!result ? 'Câu hỏi' : result.cau_hoi}</Typography>
         </div>
-      </CardBody>
+        <div className="flex-shrink-0 mt-2">
+          <Typography className="break-words">Câu trả lời: {!result ? 'Câu trả lời' : result.cau_tra_loi}</Typography>
+        </div>
+      </div>
+    </CardBody>
+
+
       {result?.filename && (
         <CardFooter className="pt-0 flex justify-end">
           <Button

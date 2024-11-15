@@ -103,7 +103,7 @@ const exportToWord = async (form) => {
                             right: { style: BorderStyle.NIL, size: 0 },
                         },
                         width: {
-                            size: 50,
+                            size: 40,
                             type: WidthType.PERCENTAGE,
                         },
                         margins: {
@@ -168,7 +168,7 @@ const exportToWord = async (form) => {
                             right: { style: BorderStyle.NIL, size: 0 },
                         },
                         width: {
-                            size: 50,
+                            size: 60,
                             type: WidthType.PERCENTAGE,
                         },
                         margins: {
